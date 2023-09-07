@@ -15,6 +15,7 @@ namespace {
       H2MEvent2StdEventConverter>(H2MEvent2StdEventConverter::m_id_factory);
 }
 
+uint8_t H2MEvent2StdEventConverter::acq_mode;
 
 bool H2MEvent2StdEventConverter::Converting(
     eudaq::EventSPC d1, eudaq::StandardEventSP d2,
@@ -26,12 +27,17 @@ bool H2MEvent2StdEventConverter::Converting(
     return false;
   }
 
+  if(d1->IsBORE()){
+    acq_mode = eudaq::from_string<uint8_t>(d1->GetTag("acq_mode","0x1")); // default ToT
+    return false;
+  }
+
   // Set eudaq::StandardPlane::ID for multiple detectors
   uint32_t plane_id = conf->Get("plane_id", 0);
   EUDAQ_DEBUG("Setting eudaq::StandardPlane::ID to " + to_string(plane_id));
 
   // Read acquisition mode from configuration, defaulting to ToT.
-  uint8_t acq_mode = conf->Get("acq_mode", 0x1);
+  // uint8_t acq_mode = conf->Get("acq_mode", 0x1);
 
   // get an instance of the frame decoder
   static caribou::H2MFrameDecoder decoder;
